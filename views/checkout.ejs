@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>checkout page.</title>
+    <style>
+       .price_breakup{
+           width: 80%; 
+           margin: auto;
+           text-align: center;
+       }
+       .company_name{
+            text-align: center;
+        }
+       .sub_company_name{
+           font-size: 12px;
+       }
+    </style>
+</head>
+<body>
+        <div>  
+                <h1 class="company_name">buy<span class="sub_company_name">online.com</span></h1>
+                <ul>
+                    <li><a href="/">home</a></li>
+                    <li> <a href="/products">products</a></li>
+                    <li> <a href="/orders">your orders</a></li>
+                </ul>
+            </div>
+            <hr>
+
+             <div class="price_breakup">
+                 <h4><%= product.productname %></h4>
+                  <p>total price : <%= product.productprice %> rupees</p>
+                  <p>shipping price : <%= shipping %> rupees</p> 
+                  <h3>you pay : <%= total %></h3>
+                  <form action="/success" method="POST">
+                    <script
+                        src="https://checkout.razorpay.com/v1/checkout.js"
+                        data-key="rzp_test_0GlX8PetLfsnXi" 
+                        data-amount="<%= total %>" 
+                        data-currency="INR" 
+                        data-order_id="<%= orderid  %>"
+                        data-buttontext="continue & pay"
+                        data-name="buyonline.com"
+                        data-prefill.name="Gaurav Kumar"
+                        data-prefill.email="gaurav.kumar@example.com"
+                    ></script>
+                    <input type="hidden" custom="Hidden Element" name="productid">
+                    </form> 
+             </div>
+</body>
+</html>

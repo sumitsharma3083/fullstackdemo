@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>products.</title>
+
+    <style>
+     .product_descritption{
+         text-align: center;
+     }
+     .product-text{
+         text-align: center;
+     }
+     .company_name{
+            text-align: center;
+        }
+       .sub_company_name{
+           font-size: 12px;
+       }
+    </style>
+</head>
+<body>
+        <div>
+                <h1 class="company_name">buy<span class="sub_company_name">online.com</span></h1>
+                <ul>
+                    <li><a href="/">home</a></li>
+                    <li> <a href="/products">products</a></li>
+                    <li> <a href="/orders">your orders</a></li>
+                </ul>
+        </div>
+        <hr>
+        <h1 class="product-text">our products.</h1>
+        <hr>
+
+        <div class="product_descritption">
+           <h4><%= product.productname %></h4>
+           <h1><%= product.productprice %> rupees</h1>
+            <form action="/checkout" method="POST">
+                <input type="hidden" name="productid" value="<%= product._id %>">
+               <input type="submit" value="buy now !">
+            </form>
+        </div>
+</body>
+</html>

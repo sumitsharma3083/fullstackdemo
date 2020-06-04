@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>orders</title>
+    <style>
+     .order_container{
+         display: grid ; 
+         grid-template-columns: 1fr 1fr 1fr ;
+     }
+    </style>
+</head>
+<body>
+       
+    <h1>all orders</h1>
+    <hr>  
+
+     <% for(var i=0 ; i< myorders.length ; i++) { %>
+        <div class="order_container">
+            <h4>order id: </h4>
+            <p><a href="#"><%= myorders[i].orderid %></a></p> 
+            <a href="/refund/<%= myorders[i].paymentid %>">refund</a>
+         </div>
+         <hr>
+        <% } %>
+  
+</body>
+</html>

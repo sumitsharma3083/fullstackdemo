@@ -37,7 +37,6 @@ app.use((req,res , next)=>{
      next();
 })
 
-
  app.get('/', (req,res)=>{ 
        res.render('index')
  }) 
@@ -117,6 +116,15 @@ app.use((req,res , next)=>{
   app.get('/refund/:paymentid', (req,res)=>{
        const paymentid =  req.params.paymentid 
            
+  }) 
+
+
+  app.get('/login' , (req,res)=>{
+    res.render('login')
+  })
+
+  app.get('/register', (req,res)=>{
+         res.render("register")
   })
 
  app.listen(port ,  ()=>{

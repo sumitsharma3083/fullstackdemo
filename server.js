@@ -1,3 +1,4 @@
+     // Packages
 const express = require('express')
 const app     = express();
 const bodyParser = require('body-parser')
@@ -5,10 +6,22 @@ const ejs  = require('ejs')
 const port = process.env.PORT  || 5000 ; 
 const mongoose = require('mongoose')
 const razorpay = require('razorpay')
-const keyid = 'rzp_test_0GlX8PetLfsnXi'
-const keysecret = 'XZaxvzdwmrHiRVQOuF9bwsVP'
+const cookieParser = require('cookie-parser')
+const session  = require('express-session')
+const mongodbSession = require('connect-mongodb-session')(session) 
+const isLogged = require('./config/auth')
+
+    //Models 
 const Product = require('./model/product')
 const Order   = require('./model/order')
+const User   = require('./model/User')
+
+
+
+    // Razorpay credentials .
+const keyid = 'rzp_test_0GlX8PetLfsnXi'
+const keysecret = 'XZaxvzdwmrHiRVQOuF9bwsVP'
+
 var instance = new razorpay({
  key_id: keyid,
  key_secret: keysecret,
@@ -16,10 +29,24 @@ var instance = new razorpay({
 
 
 
+const store = new mongodbSession({
+      uri : "mongodb+srv://sumit:sumit123@cluster0-x042n.mongodb.net/demopaymentapp?retryWrites=true&w=majority" , 
+      collection : "mysessions"
+})
+
+
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({extended : false}))
+app.use(cookieParser())
+app.use(session({
+      secret: 'keyboard cat',
+      resave: false,
+      saveUninitialized: false , 
+      store :  store
+    }))
 
 
+ 
 app.use((req,res , next)=>{
      Product.find().then((result) => {
            if(result.length  == 0)
@@ -37,13 +64,46 @@ app.use((req,res , next)=>{
      next();
 })
 
- app.get('/', (req,res)=>{ 
-       res.render('index')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ app.get('/', isLogged , (req,res)=>{  
+     res.render('index', {islogged  : req.session.loggedIn })
  }) 
- app.get('/products', (req,res)=>{
+
+
+
+
+
+
+
+
+
+
+
+ app.get('/products', (req,res)=>{ 
+     
+       
         Product.find().then((data) => {
-                
-                 res.render('products', {product: data[0]})
+                 res.render('products', {product: data[0] , islogged  : req.session.loggedIn})
         }).catch((err) => {
                 console.log(err);
                 
@@ -51,7 +111,7 @@ app.use((req,res , next)=>{
  })
 
 
- app.post('/checkout' , (req,res)=>{
+ app.post('/checkout' , isLogged  ,(req,res)=>{
         
        var shippingPrice ; 
        var totalPrice ; 
@@ -75,7 +135,7 @@ app.use((req,res , next)=>{
                  instance.orders.create(options, (err, order)=>{
                        orderId = order.id ;
                        totalPrice = order.amount;
-                       res.render('checkout' , {product : product , shipping : shippingPrice, total :  order.amount , orderid :  orderId, productid : product._id})
+                       res.render('checkout' , {product : product , shipping : shippingPrice, total :  order.amount , orderid :  orderId, productid : product._id , islogged  : req.session.loggedIn})
                  })
                
          
@@ -102,11 +162,11 @@ app.use((req,res , next)=>{
          res.send("Payment is successful..")
  })
 
-  app.get('/orders', (req,res)=>{
+  app.get('/orders', isLogged , (req,res)=>{
          
       Order.find().then((orders) => { 
             console.log(orders)
-            res.render('order' , {myorders : orders} )
+            res.render('order' , {myorders : orders, islogged  : req.session.loggedIn} )
       }).catch((err) => {
             
       });
@@ -120,12 +180,137 @@ app.use((req,res , next)=>{
 
 
   app.get('/login' , (req,res)=>{
-    res.render('login')
+    res.render('login' , {islogged : req.session.isLogged})
   })
 
+ 
+
+  app.post('/login', (req,res,next)=>{
+
+     const { username , password } = req.body 
+
+     User.findOne({username : username }).then((result) => {
+            if(result)
+            {
+                  const storedpassword = result.password 
+                  if(storedpassword == password)
+                  {
+                         req.session.user = result
+                         req.session.loggedIn= true 
+                         res.send("login successfull")
+                  }
+                  else{
+                        res.send("login failed")
+                  }
+            }
+            else{
+                    res.send("no such user found") 
+            }
+             
+     }).catch((err) => {
+            console.log(err);
+            
+     });
+
+})
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   app.get('/register', (req,res)=>{
-         res.render("register")
+         res.render("register", {islogged  : req.session.loggedIn})
   })
+
+
+
+
+
+
+
+
+  app.post('/register', (req,res)=>{
+        const { username , password } = req.body
+         
+        User.findOne({username : username}).then((result) => {
+                 if(!result)
+                 {
+                  const newuser = new User({
+                        username : username , 
+                        password : password
+                  })
+                  newuser.save()   
+                 }
+        }).catch((err) => {
+               console.log(err);
+               
+        }); 
+         res.redirect('/register')
+ })
+
+
+
+ app.get('/logout', (req,res)=>{
+   req.session.destroy((err)=>{
+         if(err)
+         {
+               throw err ;
+         }
+          
+         res.redirect('/login')
+   })
+
+ })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
  app.listen(port ,  ()=>{
     mongoose.connect('mongodb+srv://sumit:sumit123@cluster0-x042n.mongodb.net/demopaymentapp?retryWrites=true&w=majority').then(() => {

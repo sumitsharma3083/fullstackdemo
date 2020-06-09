@@ -10,7 +10,20 @@ const user = new Schema({
     password : {
         type : String , 
         required : true 
-    }
+    }, 
+    orders : [
+        {
+            orderid : {
+                type : String
+            }, 
+            paymentid : {
+                type : String 
+            },
+            signature : {
+                type : String 
+            }
+        }
+    ]
 })
 
 

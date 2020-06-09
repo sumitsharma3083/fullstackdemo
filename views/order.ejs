@@ -15,16 +15,14 @@
 <body>
         <%- include('./partial/common') %>
     <h1>all orders</h1>
-    <hr>  
+    <% for(var i=0 ; i<orders.length ; i++) {  %> 
+        <div>
+            <span>paymentid - </span> <%= orders[i].paymentid %> <br>
+            <span>orderid - </span> <%= orders[i].orderid %> <br>
+            <span>paymentid -</span> <%= orders[i].signature %>
+        </div>
+     <% }  %>
+     <hr>  
 
-     <% for(var i=0 ; i< myorders.length ; i++) { %>
-        <div class="order_container">
-            <h4>order id: </h4>
-            <p><a href="#"><%= myorders[i].orderid %></a></p> 
-            <a href="/refund/<%= myorders[i].paymentid %>">refund</a>
-         </div>
-         <hr>
-        <% } %>
-  
 </body>
 </html>

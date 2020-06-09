@@ -11,10 +11,31 @@ const session  = require('express-session')
 const mongodbSession = require('connect-mongodb-session')(session) 
 const isLogged = require('./config/auth')
 
+
+
+
+
+
+
+
+
+
+
+
     //Models 
 const Product = require('./model/product')
-const Order   = require('./model/order')
 const User   = require('./model/User')
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -29,10 +50,30 @@ var instance = new razorpay({
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 const store = new mongodbSession({
       uri : "mongodb+srv://sumit:sumit123@cluster0-x042n.mongodb.net/demopaymentapp?retryWrites=true&w=majority" , 
       collection : "mysessions"
 })
+
+
+
+
+
+
+
+
+
 
 
 app.set('view engine', 'ejs')
@@ -44,6 +85,8 @@ app.use(session({
       saveUninitialized: false , 
       store :  store
     }))
+
+
 
 
  
@@ -81,13 +124,17 @@ app.use((req,res , next)=>{
 
 
 
-
-
-
+  
 
  app.get('/', isLogged , (req,res)=>{  
-     res.render('index', {islogged  : req.session.loggedIn })
+     res.render('index', {islogged  : req.session.loggedIn, user : req.session.user })
  }) 
+
+
+ 
+
+
+
 
 
 
@@ -109,6 +156,24 @@ app.use((req,res , next)=>{
                 
         });
  })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
  app.post('/checkout' , isLogged  ,(req,res)=>{
@@ -147,31 +212,103 @@ app.use((req,res , next)=>{
  })
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  app.post('/success' , (req,res)=>{
     var razorpay_order_id = req.body.razorpay_order_id
     var razorpay_payment_id = req.body.razorpay_payment_id
     var razorpay_signature = req.body.razorpay_signature 
     var productId = req.body.productid ;
 
-    var order = new Order({
-      orderid :razorpay_order_id , 
-      paymentid : razorpay_payment_id , 
-      signature : razorpay_signature
-      })
-         order.save();  
+     User.findOne({username : req.session.user.username}).then((user) => {
+            var orders = user.orders 
+            var orderObj = {
+                  orderid : razorpay_order_id, 
+                  paymentid: razorpay_payment_id, 
+                  signature : razorpay_signature
+            }
+             orders.push(orderObj)
+
+             user.save();
+     }).catch((err) => {
+            console.log(err);
+            
+     });
          res.send("Payment is successful..")
  })
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   app.get('/orders', isLogged , (req,res)=>{
-         
-      Order.find().then((orders) => { 
-            console.log(orders)
-            res.render('order' , {myorders : orders, islogged  : req.session.loggedIn} )
-      }).catch((err) => {
+          
+      
+     User.findOne({username : req.session.user.username}).then((user) => {  
+           console.log(user.orders)
+      res.render('order' , { orders : user.orders ,islogged  : req.session.loggedIn} )
+     }).catch((err) => {
+            console.log(err);
             
-      });
+     });
+
+      
+      // Order.find().then((orders) => { 
+          
+      // 
+      // }).catch((err) => {
+            
+      // });
      
   })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   app.get('/refund/:paymentid', (req,res)=>{
        const paymentid =  req.params.paymentid 
@@ -179,11 +316,39 @@ app.use((req,res , next)=>{
   }) 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   app.get('/login' , (req,res)=>{
     res.render('login' , {islogged : req.session.isLogged})
   })
 
  
+
+
+
+
+
+
+
+
+
+
+
+
 
   app.post('/login', (req,res,next)=>{
 
@@ -262,6 +427,17 @@ app.use((req,res , next)=>{
 
 
 
+
+
+
+
+
+
+
+
+
+
+
   app.post('/register', (req,res)=>{
         const { username , password } = req.body
          
@@ -283,6 +459,25 @@ app.use((req,res , next)=>{
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  app.get('/logout', (req,res)=>{
    req.session.destroy((err)=>{
          if(err)
@@ -294,6 +489,7 @@ app.use((req,res , next)=>{
    })
 
  })
+
 
 
 

@@ -10,7 +10,7 @@ const cookieParser = require('cookie-parser')
 const session  = require('express-session')
 const mongodbSession = require('connect-mongodb-session')(session) 
 const isLogged = require('./config/auth')
-
+const { check, validationResult } = require('express-validator')
 
 
 
@@ -75,8 +75,8 @@ const store = new mongodbSession({
 
 
 
-
 app.set('view engine', 'ejs')
+app.use(express.static('public'))
 app.use(bodyParser.urlencoded({extended : false}))
 app.use(cookieParser())
 app.use(session({
@@ -273,8 +273,6 @@ app.use((req,res , next)=>{
 
 
   app.get('/orders', isLogged , (req,res)=>{
-          
-      
      User.findOne({username : req.session.user.username}).then((user) => {  
            console.log(user.orders)
       res.render('order' , { orders : user.orders ,islogged  : req.session.loggedIn} )
@@ -284,12 +282,7 @@ app.use((req,res , next)=>{
      });
 
       
-      // Order.find().then((orders) => { 
-          
-      // 
-      // }).catch((err) => {
-            
-      // });
+     
      
   })
 
@@ -438,23 +431,29 @@ app.use((req,res , next)=>{
 
 
 
-  app.post('/register', (req,res)=>{
-        const { username , password } = req.body
+  app.post('/register', [ 
+        check('username').notEmpty() , check('password').isLength({min : 5}) 
+  ]   , (req,res)=>{  
+
+        const error = validationResult(req) 
+
+        console.log(error.array()) ;
+      //   const { username , password } = req.body 
          
-        User.findOne({username : username}).then((result) => {
-                 if(!result)
-                 {
-                  const newuser = new User({
-                        username : username , 
-                        password : password
-                  })
-                  newuser.save()   
-                 }
-        }).catch((err) => {
-               console.log(err);
+      //   User.findOne({username : username}).then((result) => {
+      //            if(!result)
+      //            {
+      //             const newuser = new User({
+      //                   username : username , 
+      //                   password : password
+      //             })
+      //             newuser.save()   
+      //            }
+      //   }).catch((err) => {
+      //          console.log(err);
                
-        }); 
-         res.redirect('/register')
+      //   }); 
+      //    res.redirect('/register')
  })
 
 

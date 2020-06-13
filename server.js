@@ -10,6 +10,7 @@ const cookieParser = require('cookie-parser')
 const session  = require('express-session')
 const mongodbSession = require('connect-mongodb-session')(session) 
 const isLogged = require('./config/auth')
+
 const { check, validationResult } = require('express-validator')
 
 

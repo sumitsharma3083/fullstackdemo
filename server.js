@@ -11,9 +11,11 @@ const session    = require('express-session')
 const mongodbSession = require('connect-mongodb-session')(session) 
 const isLogged  = require('./config/auth')
 const flash     = require('connect-flash') 
-const bcrypt = require('bcryptjs')
-
 const { check, validationResult } = require('express-validator')
+
+
+
+
 
 
 
@@ -28,6 +30,9 @@ const { check, validationResult } = require('express-validator')
     //Models 
 const Product = require('./model/product')
 const User   = require('./model/User')
+
+
+
 
 
 
@@ -59,6 +64,10 @@ var instance = new razorpay({
 
 
 
+
+
+
+
 const store = new mongodbSession({
       uri : "mongodb+srv://sumit:sumit123@cluster0-x042n.mongodb.net/demopaymentapp?retryWrites=true&w=majority" , 
       collection : "mysessions"
@@ -74,15 +83,28 @@ const store = new mongodbSession({
 
 
 app.set('view engine', 'ejs')
+
+
+
 app.use(express.static('public'))
+
+
+
 app.use(bodyParser.urlencoded({extended : false}))
+
+
+
 app.use(cookieParser())
+
+
 app.use(session({
       secret: 'keyboard cat',
       resave: false,
       saveUninitialized: false , 
       store :  store
     }))
+
+
 
 app.use(flash())
 
@@ -122,6 +144,8 @@ app.use((req,res , next)=>{
 
 
 
+
+
       
 
  app.get('/', isLogged , (req,res)=>{  
@@ -139,6 +163,12 @@ app.use((req,res , next)=>{
 
 
 
+
+
+
+
+
+ 
 
 
 
@@ -323,8 +353,13 @@ app.use((req,res , next)=>{
 
 
 
-  app.get('/login' , (req,res)=>{
-    res.render('login' , {islogged : req.session.isLogged, message : req.flash('message')})
+  app.get('/login' , (req,res)=>{  
+         if(req.session.loggedIn){
+              res.redirect('/')
+         }else{
+            res.render('login' , {islogged : req.session.isLogged, message : req.flash('message')})
+         }
+    
   })
 
  
@@ -359,10 +394,11 @@ app.use((req,res , next)=>{
                   {
                          req.session.user = result
                          req.session.loggedIn= true 
-                         res.send("login successfull")
+                         res.redirect('/')
                   }
-                  else{
-                        res.send("login failed")
+                  else{ 
+                        error.push("password you have entered in incorrect !")
+                        res.render('login', {errors : error} )
                   }
             }
             else{ 
@@ -387,31 +423,6 @@ app.use((req,res , next)=>{
 })
 
  
-
-
-//      User.findOne({username : username }).then((result) => {
-//             if(result)
-//             {
-//                   const storedpassword = result.password 
-//                   if(storedpassword == password)
-//                   {
-//                          req.session.user = result
-//                          req.session.loggedIn= true 
-//                          res.send("login successfull")
-//                   }
-//                   else{
-//                         res.send("login failed")
-//                   }
-//             }
-//             else{
-//                     res.send("no such user found") 
-//             }
-             
-//      }).catch((err) => {
-//             console.log(err);
-            
-//      });
-
 
 
 
@@ -518,7 +529,7 @@ app.use((req,res , next)=>{
 
 
 
-   // 
+
 
 
 

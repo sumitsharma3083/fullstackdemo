@@ -1,15 +1,17 @@
      // Packages
-const express = require('express')
-const app     = express();
+const express    = require('express')
+const app        = express();
 const bodyParser = require('body-parser')
-const ejs  = require('ejs')
-const port = process.env.PORT  || 5000 ; 
-const mongoose = require('mongoose')
-const razorpay = require('razorpay')
+const ejs        = require('ejs')
+const port       = process.env.PORT  || 5000 ; 
+const mongoose   = require('mongoose')
+const razorpay   = require('razorpay')
 const cookieParser = require('cookie-parser')
-const session  = require('express-session')
+const session    = require('express-session')
 const mongodbSession = require('connect-mongodb-session')(session) 
-const isLogged = require('./config/auth')
+const isLogged  = require('./config/auth')
+const flash     = require('connect-flash') 
+const bcrypt = require('bcryptjs')
 
 const { check, validationResult } = require('express-validator')
 
@@ -57,11 +59,6 @@ var instance = new razorpay({
 
 
 
-
-
-
-
-
 const store = new mongodbSession({
       uri : "mongodb+srv://sumit:sumit123@cluster0-x042n.mongodb.net/demopaymentapp?retryWrites=true&w=majority" , 
       collection : "mysessions"
@@ -87,7 +84,7 @@ app.use(session({
       store :  store
     }))
 
-
+app.use(flash())
 
 
  
@@ -125,7 +122,7 @@ app.use((req,res , next)=>{
 
 
 
-  
+      
 
  app.get('/', isLogged , (req,res)=>{  
      res.render('index', {islogged  : req.session.loggedIn, user : req.session.user })
@@ -327,7 +324,7 @@ app.use((req,res , next)=>{
 
 
   app.get('/login' , (req,res)=>{
-    res.render('login' , {islogged : req.session.isLogged})
+    res.render('login' , {islogged : req.session.isLogged, message : req.flash('message')})
   })
 
  
@@ -344,14 +341,20 @@ app.use((req,res , next)=>{
 
 
 
-  app.post('/login', (req,res,next)=>{
-
-     const { username , password } = req.body 
-
-     User.findOne({username : username }).then((result) => {
+  app.post('/login', [
+        check('username').notEmpty().withMessage('Please provide username') , 
+        check('password').notEmpty().withMessage('Please provide password')
+  ] , (req,res,next)=>{
+   
+        const errors = validationResult(req) 
+        const { username , password } = req.body 
+        var error = []
+       
+        if(errors.array().length == 0){
+        User.findOne({username : username }).then((result) => {
             if(result)
             {
-                  const storedpassword = result.password 
+                var storedpassword = result.password
                   if(storedpassword == password)
                   {
                          req.session.user = result
@@ -362,8 +365,9 @@ app.use((req,res , next)=>{
                         res.send("login failed")
                   }
             }
-            else{
-                    res.send("no such user found") 
+            else{ 
+                  error.push("No such user found")
+                    res.render('login', {errors : error}) 
             }
              
      }).catch((err) => {
@@ -371,11 +375,42 @@ app.use((req,res , next)=>{
             
      });
 
+        }else{  
+            errors.array().forEach(element => {
+                  error.push(element.msg)
+          });
+              
+              res.render('login', {errors : error})
+        }
+        
+
 })
 
  
 
 
+//      User.findOne({username : username }).then((result) => {
+//             if(result)
+//             {
+//                   const storedpassword = result.password 
+//                   if(storedpassword == password)
+//                   {
+//                          req.session.user = result
+//                          req.session.loggedIn= true 
+//                          res.send("login successfull")
+//                   }
+//                   else{
+//                         res.send("login failed")
+//                   }
+//             }
+//             else{
+//                     res.send("no such user found") 
+//             }
+             
+//      }).catch((err) => {
+//             console.log(err);
+            
+//      });
 
 
 
@@ -433,29 +468,48 @@ app.use((req,res , next)=>{
 
 
   app.post('/register', [ 
-        check('username').notEmpty() , check('password').isLength({min : 5}) 
+        check('username').notEmpty().withMessage("Please provide username") , check('password').isLength({min : 5}).withMessage("Password must be atleast 5 character") 
   ]   , (req,res)=>{  
+        
+      const error = validationResult(req)
+      var errors = [] 
+      if(error.array().length  == 0){
+            const { username , password } = req.body   
+            User.findOne({username : username}).then((result) => {
+                  if(!result)
+                   {  
+                                const newuser = new User({
+                                      username : username , 
+                                      password : password
+                                 })
+                                    newuser.save()   
+                                  req.flash('message', 'account has created successfully. ')
+                                  res.redirect('/login')
+                    }
+                   
+                   else{
+                         var msg = "username already exists ! please choose another one."
+                         errors.push(msg)    
+                         res.render('register', {errors})
+                   }
+               }).catch((err) => {
+                  console.log(err); 
+               });  
 
-        const error = validationResult(req) 
+      }else{
+          for(var i=0 ; i<error.array().length ; i++){
+              errors.push(error.array()[i].msg)
+             }  
+           res.render('register', {errors})
+      }
 
-        console.log(error.array()) ;
-      //   const { username , password } = req.body 
-         
-      //   User.findOne({username : username}).then((result) => {
-      //            if(!result)
-      //            {
-      //             const newuser = new User({
-      //                   username : username , 
-      //                   password : password
-      //             })
-      //             newuser.save()   
-      //            }
-      //   }).catch((err) => {
-      //          console.log(err);
-               
-      //   }); 
-      //    res.redirect('/register')
- })
+
+  })
+
+        
+       
+
+       
 
 
 
@@ -464,10 +518,11 @@ app.use((req,res , next)=>{
 
 
 
+   // 
 
 
 
-
+       
 
 
 

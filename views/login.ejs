@@ -13,6 +13,18 @@
         <%- include('./partial/common') %>
      
      <h1>login</h1>
+
+       <% if(typeof message !== 'undefined') { %>
+       <p class="alert-primary" style="color : green"><%= message %></p>
+        <% } %>
+
+       
+        <% if(typeof(errors) !== 'undefined')  {%>
+          <% for(var i=0 ; i<errors.length ; i++)  {%>
+              <p class="error-msg"><%= errors[i] %></p>      
+          <%  } %>
+       <% } %>
+
      <form action="/login" method="POST">
          <input type="text" name="username" placeholder="username"> 
          <br>

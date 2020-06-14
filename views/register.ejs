@@ -9,11 +9,21 @@
         input{
             margin-bottom: 1rem;
         }
+        .error-msg{
+            color : red ;
+        }
     </style>
 </head>
 <body>
         <%- include('./partial/common') %>
      <h1>create your account. </h1>
+       
+         <% if(typeof(errors) !== 'undefined')  {%>
+            <% for(var i=0 ; i<errors.length ; i++)  {%>
+                <p class="error-msg"><%= errors[i] %></p>      
+            <%  } %>
+         <% } %>
+     
       <form action="/register" method="POST">
           <input type="text" name="username" id="" placeholder="enter username">
            <br>

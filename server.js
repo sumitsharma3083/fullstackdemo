@@ -28,9 +28,8 @@ const { check, validationResult } = require('express-validator')
 
 
     //Models 
-const Product = require('./model/product')
 const User   = require('./model/User')
-
+const Product = require('./model/product')
 
 
 
@@ -109,24 +108,6 @@ app.use(session({
 app.use(flash())
 
 
- 
-app.use((req,res , next)=>{
-     Product.find().then((result) => {
-           if(result.length  == 0)
-           {
-               var newproduct = new Product({
-                productname : "full sleeve tshirt", 
-                productprice : 10
-            }) 
-             newproduct.save()
-           }
-     }).catch((err) => {
-           console.log(err)
-     });
-      
-     next();
-})
-
 
 
 
@@ -175,14 +156,15 @@ app.use((req,res , next)=>{
 
 
  app.get('/products', (req,res)=>{ 
-     
-       
-        Product.find().then((data) => {
-                 res.render('products', {product: data[0] , islogged  : req.session.loggedIn})
-        }).catch((err) => {
+          Product.find().then((products) => {
+                  
+            res.render('products', {products, islogged : req.session.loggedIn})
+                 
+          }).catch((err) => {
                 console.log(err);
                 
-        });
+          });
+      
  })
 
 
@@ -555,8 +537,6 @@ app.use((req,res , next)=>{
    })
 
  })
-
-
 
 
 

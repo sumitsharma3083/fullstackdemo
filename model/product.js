@@ -10,6 +10,10 @@ const product = new schema({
     productprice : {
         type : Number , 
         required  : true
+    }, 
+    key : {
+        type: String, 
+        required : true
     }
 })
 

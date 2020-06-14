@@ -11,14 +11,32 @@
         <%- include('./partial/common') %>
         <h1 class="product-text">our products.</h1>
         <hr>
-
-        <div class="product_descritption">
-           <h4><%= product.productname %></h4>
-           <h1><%= product.productprice %> rupees</h1>
-            <form action="/checkout" method="POST">
-                <input type="hidden" name="productid" value="<%= product._id %>">
-               <input type="submit" value="buy now !">
-            </form>
-        </div>
+     
+          <%   if(typeof products !== 'undefined') {  %>
+             <!-- <form action="#" method="POST" class="filter-product-form">
+                 <select name="keyvalue" id="">
+                     <option value="none">filter by product</option>
+                     <option value="all">all</option>
+                     <option value="jean">jean</option>
+                     <option value="shirt">shirt</option>
+                     <option value="tshirt">tshirt</option> 
+                     <input type="submit" value="filter">
+                 </select>
+             </form> -->
+            <div class="all-products">
+                <% for(var i=0 ; i < products.length ; i++) {%>
+                    <div class="product_description">
+                        <h4><%= products[i].productname %></h4>
+                        <h1><%= products[i].productprice %> rupees</h1>
+                         <form action="/checkout" method="POST">
+                             <input type="hidden" name="productid" value="<%= products[i]._id %>">
+                            <input type="submit" value="buy now !">
+                         </form>
+                     </div>
+                 <% } %>
+            </div>
+                  
+            <% } %>
+        
 </body>
 </html>
